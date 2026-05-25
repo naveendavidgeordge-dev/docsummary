@@ -65,7 +65,8 @@ export class BlobStorageService implements OnModuleInit {
     const datePath = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
     const fileId = uuidv4();
     const fileName = `${fileId}-${file.originalname}`;
-    const blobPath = `${datePath}/${fileName}`;
+    // const blobPath = `${datePath}/${fileName}`;
+    const blobPath = fileName;
 
     const blockBlobClient = this.containerClient.getBlockBlobClient(blobPath);
 
