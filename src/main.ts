@@ -21,6 +21,7 @@ async function bootstrap() {
     origin: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   // Global pipes, filters, and interceptors
@@ -34,6 +35,9 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
 
+  // Prefix
+  app.setGlobalPrefix('api/v1');
+
   // Swagger Documentation
   const config = new DocumentBuilder()
     .setTitle('DocProcess API')
@@ -43,9 +47,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
-
-  // Prefix
-  app.setGlobalPrefix('api/v1');
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

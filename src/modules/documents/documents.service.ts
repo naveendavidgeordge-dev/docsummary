@@ -25,7 +25,7 @@ export class DocumentsService {
     const { url, path, fileName } = await this.blobStorageService.uploadFile(file);
 
     // Save metadata to DB
-    return this.documentRepository.create({
+    const document = await this.documentRepository.create({
       fileName,
       originalName: file.originalname,
       mimeType: file.mimetype,
@@ -35,6 +35,15 @@ export class DocumentsService {
       status: DocumentStatus.PENDING,
       user: { connect: { id: userId } },
     });
+
+    await this.blobStorageService.enqueueDocumentProcessing({
+      documentId: document.id,
+      blobPath: document.blobPath,
+      originalName: document.originalName,
+      mimeType: document.mimeType,
+    });
+
+    return document;
   }
 
   async listDocuments(userId: string) {
