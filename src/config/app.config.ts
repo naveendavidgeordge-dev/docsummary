@@ -8,6 +8,5 @@ export default registerAs('app', () => ({
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
   azureStorageContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'documents',
-  azureStorageQueueName: process.env.AZURE_STORAGE_QUEUE_NAME || 'document-processing',
   azureKeyVaultUrl: process.env.AZURE_KEY_VAULT_URL,
 }));

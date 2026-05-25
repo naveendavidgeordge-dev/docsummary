@@ -7,20 +7,17 @@ import {
   BlobSASPermissions,
   StorageSharedKeyCredential,
 } from '@azure/storage-blob';
-import { QueueClient } from '@azure/storage-queue';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BlobStorageService implements OnModuleInit {
   private readonly containerClient: ContainerClient;
-  private readonly queueClient: QueueClient;
   private readonly logger = new Logger(BlobStorageService.name);
   private sharedKeyCredential: StorageSharedKeyCredential | null = null;
 
   constructor(private readonly configService: ConfigService) {
     const connectionString = this.configService.get<string>('app.azureStorageConnectionString');
     const containerName = this.configService.get<string>('app.azureStorageContainerName');
-    const queueName = this.configService.get<string>('app.azureStorageQueueName');
 
     if (connectionString && connectionString !== 'your_connection_string') {
       try {
@@ -36,7 +33,6 @@ export class BlobStorageService implements OnModuleInit {
 
         const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
         this.containerClient = blobServiceClient.getContainerClient(containerName as string);
-        this.queueClient = new QueueClient(connectionString, queueName as string);
         this.logger.log('BlobServiceClient initialized successfully');
       } catch (error) {
         this.logger.error(`Failed to initialize BlobServiceClient: ${(error as any).message}`);
@@ -60,15 +56,6 @@ export class BlobStorageService implements OnModuleInit {
         }
       } catch (error) {
         this.logger.error(`Failed to ensure container exists: ${(error as any).message}`);
-      }
-    }
-
-    if (this.queueClient) {
-      try {
-        await this.queueClient.createIfNotExists();
-        this.logger.log(`Queue ready: ${this.queueClient.name}`);
-      } catch (error) {
-        this.logger.error(`Failed to ensure queue exists: ${(error as any).message}`);
       }
     }
   }
@@ -121,16 +108,5 @@ export class BlobStorageService implements OnModuleInit {
   async deleteBlob(blobPath: string): Promise<void> {
     const blockBlobClient = this.containerClient.getBlockBlobClient(blobPath);
     await blockBlobClient.deleteIfExists();
-  }
-
-  async enqueueDocumentProcessing(message: {
-    documentId: string;
-    blobPath: string;
-    originalName: string;
-    mimeType: string;
-  }): Promise<void> {
-    const encodedMessage = Buffer.from(JSON.stringify(message)).toString('base64');
-    await this.queueClient.sendMessage(encodedMessage);
-    this.logger.log(`Queued document processing: ${message.documentId}`);
   }
 }
